@@ -1,0 +1,16 @@
+
+/* element-variables.scss */
+/* 暗色背景 */
+$--color-primary: rgb(11, 225, 253);
+$--font-path: "~element-ui/lib/theme-chalk/fonts/";
+@import "~element-ui/packages/theme-chalk/src/index";
+
+
+.el-statistic {
+  .head {
+    color: #fff !important;
+  }
+  .con {
+    color: #fff !important;
+  }
+}
