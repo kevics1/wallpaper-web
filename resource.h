@@ -7,7 +7,6 @@
 #define IDR_MAINFRAME                   128
 #define IDR_TerrainTYPE                 130
 #define IDD_COLOR_SCHEME                316
-#define IDC_COLOR_SCHEME_LIST           1004
 #define ID_32771                        32771
 #define ID_DEM                          32772
 #define ID_32773                        32773
