@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/lushan_efficiency_suite" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
