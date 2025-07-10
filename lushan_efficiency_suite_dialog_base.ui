@@ -1,33 +1,253 @@
-<ui version="4.0" >
+<ui version="4.0">
  <class>LushanEfficiencySuiteDialogBase</class>
- <widget class="QDialog" name="LushanEfficiencySuiteDialogBase" >
-  <property name="geometry" >
+ <widget class="QDialog" name="LushanEfficiencySuiteDialogBase">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>450</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Lushan Efficiency Suite</string>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>450</height>
+   </size>
   </property>
-  <widget class="QDialogButtonBox" name="button_box" >
-   <property name="geometry" >
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <property name="windowTitle">
+   <string>Lushan Efficiency Suite - Buffer Analysis Tool</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="inputGroupBox">
+     <property name="title">
+      <string>Input Vector Layer</string>
+     </property>
+     <layout class="QGridLayout" name="inputGridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="fileLabel">
+        <property name="text">
+         <string>Select Vector File:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="filePathLineEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>No file selected...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="browseButton">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="bufferGroupBox">
+     <property name="title">
+      <string>Buffer Parameters</string>
+     </property>
+     <layout class="QGridLayout" name="bufferGridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="distanceLabel">
+        <property name="text">
+         <string>Buffer Distance:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="distanceSpinBox">
+        <property name="suffix">
+         <string> m</string>
+        </property>
+        <property name="minimum">
+         <double>0.010000000000000</double>
+        </property>
+        <property name="maximum">
+         <double>999999.000000000000000</double>
+        </property>
+        <property name="value">
+         <double>100.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QComboBox" name="unitComboBox">
+        <item>
+         <property name="text">
+          <string>meters</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>kilometers</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>feet</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>miles</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="segmentsLabel">
+        <property name="text">
+         <string>Segments:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="segmentsSpinBox">
+        <property name="minimum">
+         <number>4</number>
+        </property>
+        <property name="maximum">
+         <number>100</number>
+        </property>
+        <property name="value">
+         <number>16</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QLabel" name="segmentsHelpLabel">
+        <property name="text">
+         <string>(Higher = smoother curves)</string>
+        </property>
+        <property name="styleSheet">
+         <string>color: gray; font-style: italic;</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3">
+       <widget class="QCheckBox" name="dissolveCheckBox">
+        <property name="text">
+         <string>Dissolve overlapping buffers into single features</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="outputGroupBox">
+     <property name="title">
+      <string>Output Options</string>
+     </property>
+     <layout class="QGridLayout" name="outputGridLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="outputLabel">
+        <property name="text">
+         <string>Output Layer Name:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="outputNameLineEdit">
+        <property name="placeholderText">
+         <string>Buffer_Output</string>
+        </property>
+        <property name="text">
+         <string>Buffer_Output</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="addToMapCheckBox">
+        <property name="text">
+         <string>Add result to map canvas</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QPushButton" name="previewButton">
+       <property name="text">
+        <string>Preview</string>
+       </property>
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="button_box">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
@@ -37,11 +257,11 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -53,11 +273,11 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>286</x>
      <y>274</y>
     </hint>

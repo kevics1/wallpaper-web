@@ -32,7 +32,10 @@ Facility Accessibility Analyzer: Generates multi-criteria service coverage maps 
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.core import (QgsProject, QgsVectorLayer, QgsProcessingFeedback,
+                       QgsProcessingContext)
+from qgis import processing
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -194,9 +197,11 @@ class LushanEfficiencySuite:
 
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
+        if self.first_start:
             self.first_start = False
             self.dlg = LushanEfficiencySuiteDialog()
+            # Connect the buffer requested signal
+            self.dlg.bufferRequested.connect(self.perform_buffer_analysis)
 
         # show the dialog
         self.dlg.show()
@@ -204,6 +209,117 @@ class LushanEfficiencySuite:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
+            # Dialog was accepted and buffer analysis would have been performed
+            # in the perform_buffer_analysis method
             pass
+
+    def perform_buffer_analysis(self, parameters):
+        """Perform buffer analysis using QGIS processing tools."""
+        try:
+            # Show progress bar
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setVisible(True)
+                self.dlg.progressBar.setValue(0)
+
+            # Create processing context and feedback
+            context = QgsProcessingContext()
+            feedback = QgsProcessingFeedback()
+
+            input_layer = parameters['input_layer']
+            distance = parameters['distance']
+            segments = parameters['segments']
+            dissolve = parameters['dissolve']
+            output_name = parameters['output_name']
+            add_to_map = parameters['add_to_map']
+
+            # Update progress
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setValue(25)
+
+            # Prepare buffer parameters
+            buffer_params = {
+                'INPUT': input_layer,
+                'DISTANCE': distance,
+                'SEGMENTS': segments,
+                'END_CAP_STYLE': 0,  # Round
+                'JOIN_STYLE': 0,     # Round
+                'MITER_LIMIT': 2,
+                'DISSOLVE': dissolve,
+                'OUTPUT': 'TEMPORARY_OUTPUT'
+            }
+
+            # Update progress
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setValue(50)
+
+            # Run buffer algorithm
+            result = processing.run("native:buffer", buffer_params, context=context, feedback=feedback)
+
+            if not result or 'OUTPUT' not in result:
+                raise Exception("Buffer processing failed - no output generated")
+
+            # Update progress
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setValue(75)
+
+            # Get the output layer
+            buffer_layer = result['OUTPUT']
+
+            if isinstance(buffer_layer, str):
+                # If it's a path, load it as a layer
+                buffer_layer = QgsVectorLayer(buffer_layer, output_name, "ogr")
+
+            if not buffer_layer.isValid():
+                raise Exception("Generated buffer layer is invalid")
+
+            # Set layer name
+            buffer_layer.setName(output_name)
+
+            # Add to map if requested
+            if add_to_map:
+                QgsProject.instance().addMapLayer(buffer_layer)
+
+                # Zoom to layer extent
+                if self.iface and self.iface.mapCanvas():
+                    self.iface.mapCanvas().setExtent(buffer_layer.extent())
+                    self.iface.mapCanvas().refresh()
+
+            # Update progress
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setValue(100)
+
+            # Show success message
+            feature_count = buffer_layer.featureCount()
+            QMessageBox.information(
+                self.dlg,
+                "Buffer Analysis Complete",
+                f"Buffer analysis completed successfully!\n\n"
+                f"Output layer: {output_name}\n"
+                f"Features created: {feature_count}\n"
+                f"Buffer distance: {distance:.2f} meters\n"
+                f"Added to map: {'Yes' if add_to_map else 'No'}"
+            )
+
+            # Hide progress bar
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setVisible(False)
+
+            # Close dialog
+            self.dlg.accept()
+
+        except Exception as e:
+            # Hide progress bar
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setVisible(False)
+
+            # Show error message
+            QMessageBox.critical(
+                self.dlg,
+                "Buffer Analysis Error",
+                f"An error occurred during buffer analysis:\n\n{str(e)}"
+            )
+
+        finally:
+            # Ensure progress bar is hidden
+            if hasattr(self.dlg, 'progressBar'):
+                self.dlg.progressBar.setVisible(False)

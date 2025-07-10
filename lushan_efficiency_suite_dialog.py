@@ -35,6 +35,9 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import pyqtSignal, QFileInfo
+from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+from qgis.core import QgsVectorLayer
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,6 +45,10 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
+
+    # Signal emitted when buffer analysis should be performed
+    bufferRequested = pyqtSignal(dict)
+
     def __init__(self, parent=None):
         """Constructor."""
         super(LushanEfficiencySuiteDialog, self).__init__(parent)
@@ -51,3 +58,174 @@ class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        # Initialize variables
+        self.selected_layer = None
+
+        # Connect signals
+        self._connect_signals()
+
+        # Initialize UI state
+        self._init_ui_state()
+
+    def _connect_signals(self):
+        """Connect UI signals to their respective slots."""
+        self.browseButton.clicked.connect(self.browse_for_file)
+        self.filePathLineEdit.textChanged.connect(self.on_file_path_changed)
+        self.unitComboBox.currentTextChanged.connect(self.on_unit_changed)
+        self.previewButton.clicked.connect(self.preview_buffer)
+        self.button_box.accepted.connect(self.execute_buffer)
+
+    def _init_ui_state(self):
+        """Initialize the UI state."""
+        # Set initial distance unit suffix
+        self.on_unit_changed()
+
+        # Disable preview and OK button until a file is selected
+        self.previewButton.setEnabled(False)
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+
+    def browse_for_file(self):
+        """Open file dialog to browse for vector files."""
+        file_filter = "Vector Files (*.shp *.gpkg *.geojson *.kml *.gml);;All Files (*)"
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Vector File",
+            "",
+            file_filter
+        )
+
+        if file_path:
+            self.filePathLineEdit.setText(file_path)
+            self.load_vector_layer(file_path)
+
+    def load_vector_layer(self, file_path):
+        """Load and validate the selected vector layer."""
+        try:
+            # Create file info to get basename
+            file_info = QFileInfo(file_path)
+            layer_name = file_info.baseName()
+
+            # Create vector layer
+            layer = QgsVectorLayer(file_path, layer_name, "ogr")
+
+            if not layer.isValid():
+                QMessageBox.warning(
+                    self,
+                    "Invalid Layer",
+                    f"The selected file could not be loaded as a valid vector layer:\n{file_path}"
+                )
+                self.selected_layer = None
+                return
+
+            # Check if layer has features
+            if layer.featureCount() == 0:
+                QMessageBox.warning(
+                    self,
+                    "Empty Layer",
+                    "The selected layer contains no features."
+                )
+                self.selected_layer = None
+                return
+
+            self.selected_layer = layer
+
+            # Update output name based on input file
+            output_name = f"{layer_name}_buffer"
+            self.outputNameLineEdit.setText(output_name)
+
+            QMessageBox.information(
+                self,
+                "Layer Loaded",
+                f"Successfully loaded layer: {layer_name}\n"
+                f"Geometry Type: {layer.geometryType()}\n"
+                f"Feature Count: {layer.featureCount()}\n"
+                f"CRS: {layer.crs().authid()}"
+            )
+
+        except Exception as e:
+            QMessageBox.critical(
+                self,
+                "Error Loading Layer",
+                f"An error occurred while loading the layer:\n{str(e)}"
+            )
+            self.selected_layer = None
+
+    def on_file_path_changed(self):
+        """Handle file path changes."""
+        has_file = bool(self.filePathLineEdit.text().strip())
+        self.previewButton.setEnabled(has_file and self.selected_layer is not None)
+        self.button_box.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(
+            has_file and self.selected_layer is not None
+        )
+
+    def on_unit_changed(self):
+        """Handle unit selection changes."""
+        unit = self.unitComboBox.currentText()
+        unit_map = {
+            "meters": " m",
+            "kilometers": " km",
+            "feet": " ft",
+            "miles": " mi"
+        }
+        self.distanceSpinBox.setSuffix(unit_map.get(unit, " m"))
+
+    def get_buffer_parameters(self):
+        """Get buffer parameters from UI."""
+        if not self.selected_layer:
+            return None
+
+        # Convert distance to meters based on selected unit
+        distance = self.distanceSpinBox.value()
+        unit = self.unitComboBox.currentText()
+
+        distance_in_meters = distance
+        if unit == "kilometers":
+            distance_in_meters = distance * 1000
+        elif unit == "feet":
+            distance_in_meters = distance * 0.3048
+        elif unit == "miles":
+            distance_in_meters = distance * 1609.34
+
+        return {
+            'input_layer': self.selected_layer,
+            'distance': distance_in_meters,
+            'segments': self.segmentsSpinBox.value(),
+            'dissolve': self.dissolveCheckBox.isChecked(),
+            'output_name': self.outputNameLineEdit.text().strip() or "Buffer_Output",
+            'add_to_map': self.addToMapCheckBox.isChecked()
+        }
+
+    def preview_buffer(self):
+        """Preview buffer operation (for now, just show parameters)."""
+        params = self.get_buffer_parameters()
+        if not params:
+            return
+
+        # For preview, just show the parameters
+        preview_text = f"""Buffer Preview:
+
+Input Layer: {params['input_layer'].name()}
+Distance: {params['distance']:.2f} meters
+Segments: {params['segments']}
+Dissolve: {'Yes' if params['dissolve'] else 'No'}
+Output Name: {params['output_name']}
+Add to Map: {'Yes' if params['add_to_map'] else 'No'}
+
+Click OK to execute the buffer operation."""
+
+        QMessageBox.information(self, "Buffer Preview", preview_text)
+
+    def execute_buffer(self):
+        """Execute the buffer operation."""
+        params = self.get_buffer_parameters()
+        if not params:
+            QMessageBox.warning(
+                self,
+                "No Parameters",
+                "Please select a valid vector file first."
+            )
+            return
+
+        # Emit signal with parameters
+        self.bufferRequested.emit(params)
