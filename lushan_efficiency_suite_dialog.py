@@ -35,6 +35,8 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import QMessageBox
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -42,6 +44,15 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 
 class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
+    
+    # Define signals for the six main functionalities
+    create_frame_signal = pyqtSignal()
+    process_dem_signal = pyqtSignal()
+    download_osm_signal = pyqtSignal()
+    project_layers_signal = pyqtSignal()
+    symbolize_signal = pyqtSignal()
+    add_annotations_signal = pyqtSignal()
+    
     def __init__(self, parent=None):
         """Constructor."""
         super(LushanEfficiencySuiteDialog, self).__init__(parent)
@@ -51,3 +62,67 @@ class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        
+        # Connect button signals to slots
+        self.connect_signals()
+        
+    def connect_signals(self):
+        """Connect button signals to their respective slots."""
+        try:
+            self.btn_create_frame.clicked.connect(self.create_frame)
+            self.btn_process_dem.clicked.connect(self.process_dem)
+            self.btn_download_osm.clicked.connect(self.download_osm)
+            self.btn_project_layers.clicked.connect(self.project_layers)
+            self.btn_symbolize.clicked.connect(self.symbolize)
+            self.btn_add_annotations.clicked.connect(self.add_annotations)
+        except AttributeError as e:
+            # Handle case where UI elements might not be loaded yet
+            print(f"Warning: Could not connect signals: {e}")
+            
+    def create_frame(self):
+        """Create map frame layer."""
+        try:
+            self.create_frame_signal.emit()
+            QMessageBox.information(self, "信息", "图廓层创建功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"创建图廓层时发生错误: {str(e)}")
+            
+    def process_dem(self):
+        """Process DEM data for hillshade and contours."""
+        try:
+            self.process_dem_signal.emit()
+            QMessageBox.information(self, "信息", "DEM处理功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"处理DEM数据时发生错误: {str(e)}")
+            
+    def download_osm(self):
+        """Download OSM data."""
+        try:
+            self.download_osm_signal.emit()
+            QMessageBox.information(self, "信息", "OSM数据下载功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"下载OSM数据时发生错误: {str(e)}")
+            
+    def project_layers(self):
+        """Project layers to EPSG:32650."""
+        try:
+            self.project_layers_signal.emit()
+            QMessageBox.information(self, "信息", "图层投影功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"投影图层时发生错误: {str(e)}")
+            
+    def symbolize(self):
+        """Symbolize layers according to Lushan mapping system."""
+        try:
+            self.symbolize_signal.emit()
+            QMessageBox.information(self, "信息", "图层符号化功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"符号化图层时发生错误: {str(e)}")
+            
+    def add_annotations(self):
+        """Add text annotations to layers."""
+        try:
+            self.add_annotations_signal.emit()
+            QMessageBox.information(self, "信息", "文字注记功能已启动")
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"添加文字注记时发生错误: {str(e)}")

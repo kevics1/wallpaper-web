@@ -35,9 +35,9 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
-from .resources import *
+from resources import *
 # Import the code for the dialog
-from .lushan_efficiency_suite_dialog import LushanEfficiencySuiteDialog
+from lushan_efficiency_suite_dialog import LushanEfficiencySuiteDialog
 import os.path
 
 
@@ -197,6 +197,14 @@ class LushanEfficiencySuite:
         if self.first_start == True:
             self.first_start = False
             self.dlg = LushanEfficiencySuiteDialog()
+            
+            # Connect dialog signals to plugin methods
+            self.dlg.create_frame_signal.connect(self.create_frame_layer)
+            self.dlg.process_dem_signal.connect(self.process_dem_data)
+            self.dlg.download_osm_signal.connect(self.download_osm_data)
+            self.dlg.project_layers_signal.connect(self.project_layers_to_32650)
+            self.dlg.symbolize_signal.connect(self.symbolize_layers)
+            self.dlg.add_annotations_signal.connect(self.add_text_annotations)
 
         # show the dialog
         self.dlg.show()
@@ -204,6 +212,101 @@ class LushanEfficiencySuite:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
+            # Dialog accepted - you could add any final processing here
             pass
+    
+    def create_frame_layer(self):
+        """Create map frame layer (EPSG:32650)."""
+        try:
+            from qgis.core import QgsVectorLayer, QgsProject, QgsCoordinateReferenceSystem
+            from qgis.PyQt.QtWidgets import QInputDialog
+            
+            # Get extent from user or use current map extent
+            extent = self.iface.mapCanvas().extent()
+            
+            # Create a new memory layer for the frame
+            crs = QgsCoordinateReferenceSystem('EPSG:32650')
+            layer = QgsVectorLayer('Polygon?crs=EPSG:32650', '图廓层', 'memory')
+            
+            if layer.isValid():
+                # Add the layer to the project
+                QgsProject.instance().addMapLayer(layer)
+                self.iface.messageBar().pushMessage("成功", "图廓层创建成功", level=0)
+            else:
+                self.iface.messageBar().pushMessage("错误", "无法创建图廓层", level=2)
+                
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"创建图廓层时发生错误: {str(e)}", level=2)
+    
+    def process_dem_data(self):
+        """Process DEM data for hillshade and contours."""
+        try:
+            self.iface.messageBar().pushMessage("信息", "DEM处理功能开发中，请稍候...", level=1)
+            # TODO: Implement DEM processing logic
+            # This would include:
+            # - Loading DEM data
+            # - Creating hillshade
+            # - Generating contour lines
+            # - Applying appropriate styling
+            
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"处理DEM数据时发生错误: {str(e)}", level=2)
+    
+    def download_osm_data(self):
+        """Download OSM data automatically."""
+        try:
+            self.iface.messageBar().pushMessage("信息", "OSM数据下载功能开发中，请稍候...", level=1)
+            # TODO: Implement OSM data download logic
+            # This would include:
+            # - Getting current map extent
+            # - Downloading transport nodes, peaks, roads, rivers, lakes, land use
+            # - Adding downloaded data as layers
+            
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"下载OSM数据时发生错误: {str(e)}", level=2)
+    
+    def project_layers_to_32650(self):
+        """Project layers to EPSG:32650 coordinate system."""
+        try:
+            from qgis.core import QgsProject
+            
+            # Get all layers in the project
+            layers = QgsProject.instance().mapLayers().values()
+            projected_count = 0
+            
+            for layer in layers:
+                if layer.crs().authid() != 'EPSG:32650':
+                    # TODO: Implement actual reprojection logic
+                    # For now, just count layers that would be projected
+                    projected_count += 1
+            
+            self.iface.messageBar().pushMessage("信息", f"图层投影功能开发中，发现{projected_count}个需要投影的图层", level=1)
+            
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"投影图层时发生错误: {str(e)}", level=2)
+    
+    def symbolize_layers(self):
+        """Symbolize layers according to Lushan mapping system."""
+        try:
+            self.iface.messageBar().pushMessage("信息", "图层符号化功能开发中，请稍候...", level=1)
+            # TODO: Implement symbolization logic
+            # This would include:
+            # - Defining Lushan mapping symbology
+            # - Applying symbols to different layer types
+            # - Setting up legend and styling
+            
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"符号化图层时发生错误: {str(e)}", level=2)
+    
+    def add_text_annotations(self):
+        """Add text annotations to layers."""
+        try:
+            self.iface.messageBar().pushMessage("信息", "文字注记功能开发中，请稍候...", level=1)
+            # TODO: Implement text annotation logic
+            # This would include:
+            # - Adding labels to different layer types
+            # - Setting up appropriate label positioning
+            # - Configuring font and style
+            
+        except Exception as e:
+            self.iface.messageBar().pushMessage("错误", f"添加文字注记时发生错误: {str(e)}", level=2)
