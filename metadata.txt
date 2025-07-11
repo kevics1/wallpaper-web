@@ -1,0 +1,57 @@
+# This file contains metadata for your plugin.
+
+# Mandatory items:
+[general]
+name=Lushan Efficiency Suite
+qgisMinimumVersion=3.0
+description=A QGIS plugin designed to accelerate geospatial workflows for field geography studies, inspired by the Lushan Mountain practicum.
+version=1.0.0
+author=Yang
+email=liyang22@whu.edu.cn
+
+about=Lushan Efficiency Suite is a comprehensive QGIS plugin designed to streamline geospatial workflows for field geography studies. Core functionalities include:
+
+    1. Define Map Frame Layer: Create cartographic extent area surface data as map frame layer (EPSG:32650)
+    2. Hillshade Base Map & Contour Generation: Process DEM data to generate rendered maps, hillshade, and contour lines
+    3. Data Download: Automatically download OSM data (transport nodes, peaks, roads, rivers, lakes, land use)
+    4. Data Projection: Project layers to EPSG:32650 coordinate system
+    5. Data Symbolization: Symbolize according to Lushan practicum mapping system
+    6. Text Annotation: Add appropriate text labels for all layers
+
+    The plugin features a user-friendly interface with error handling and modular design for easy maintenance and extension.
+
+tracker=https://github.com/kevics1/wallpaper-web/issues
+repository=https://github.com/kevics1/wallpaper-web
+# End of mandatory metadata
+
+# Recommended items:
+hasProcessingProvider=no
+changelog=
+    Version 1.0.0
+    - Initial release
+    - Map frame layer definition
+    - Hillshade and contour generation
+    - OSM data download integration
+    - Data projection to EPSG:32650
+    - Lushan mapping system symbolization
+    - Text annotation functionality
+
+# Tags are comma separated with spaces allowed
+tags=lushan,cartography,field study,practicum,hillshade,contour,osm,symbolization,geography
+
+homepage=https://github.com/kevics1/wallpaper-web
+category=Vector
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+# If the plugin can run on QGIS Server.
+server=False

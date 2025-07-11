@@ -1,30 +1,230 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>LushanEfficiencySuiteDialogBase</class>
- <widget class="QDialog" name="LushanEfficiencySuiteDialogBase" >
-  <property name="geometry" >
+ <widget class="QDialog" name="LushanEfficiencySuiteDialogBase">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Lushan Efficiency Suite</string>
+  <property name="windowTitle">
+   <string>庐山实习绘图分析插件</string>
   </property>
-  <widget class="QDialogButtonBox" name="button_box" >
-   <property name="geometry" >
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
+     <x>10</x>
+     <y>10</y>
+     <width>480</width>
+     <height>530</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab_frame">
+    <attribute name="title">
+     <string>定义图廓层</string>
+    </attribute>
+    <widget class="QLabel" name="label_frame">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>创建制图范围区域面数据作为图廓层 (EPSG:32650)</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_create_frame">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>创建图廓层</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_hillshade">
+    <attribute name="title">
+     <string>晕渲图底图</string>
+    </attribute>
+    <widget class="QLabel" name="label_hillshade">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>处理DEM数据，生成渲染图、山体阴影和等高线</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_process_dem">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>处理DEM数据</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_download">
+    <attribute name="title">
+     <string>数据下载</string>
+    </attribute>
+    <widget class="QLabel" name="label_download">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>自动下载OSM数据（交通站点、山峰、道路、河流、湖泊、土地利用）</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_download_osm">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>下载OSM数据</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_projection">
+    <attribute name="title">
+     <string>数据投影</string>
+    </attribute>
+    <widget class="QLabel" name="label_projection">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>将图层投影到EPSG:32650坐标系</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_project_layers">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>投影图层</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_symbolization">
+    <attribute name="title">
+     <string>数据符号化</string>
+    </attribute>
+    <widget class="QLabel" name="label_symbolization">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>按庐山实习地图体系进行符号化</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_symbolize">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>符号化图层</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_annotation">
+    <attribute name="title">
+     <string>文字注记</string>
+    </attribute>
+    <widget class="QLabel" name="label_annotation">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>20</y>
+       <width>450</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>为各图层添加适当的文字标注</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btn_add_annotations">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>60</y>
+       <width>150</width>
+       <height>30</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>添加文字注记</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QDialogButtonBox" name="button_box">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>550</y>
+     <width>300</width>
      <height>32</height>
     </rect>
    </property>
-   <property name="orientation" >
+   <property name="orientation">
     <enum>Qt::Horizontal</enum>
    </property>
-   <property name="standardButtons" >
+   <property name="standardButtons">
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
@@ -37,13 +237,13 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>248</x>
-     <y>254</y>
+     <y>564</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>157</x>
-     <y>274</y>
+     <y>584</y>
     </hint>
    </hints>
   </connection>
@@ -53,13 +253,13 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>316</x>
-     <y>260</y>
+     <y>570</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>286</x>
-     <y>274</y>
+     <y>584</y>
     </hint>
    </hints>
   </connection>
