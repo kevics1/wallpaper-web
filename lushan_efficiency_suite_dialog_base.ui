@@ -1,33 +1,591 @@
-<ui version="4.0" >
+<ui version="4.0">
  <class>LushanEfficiencySuiteDialogBase</class>
- <widget class="QDialog" name="LushanEfficiencySuiteDialogBase" >
-  <property name="geometry" >
+ <widget class="QDialog" name="LushanEfficiencySuiteDialogBase">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>800</width>
+    <height>600</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Lushan Efficiency Suite</string>
+  <property name="windowTitle">
+   <string>庐山实习地图制作工具 - Lushan Internship Map Making Tool</string>
   </property>
-  <widget class="QDialogButtonBox" name="button_box" >
-   <property name="geometry" >
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+    background-color: #f5f5f5;
+    font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+}
+QTabWidget::pane {
+    border: 1px solid #c0c0c0;
+    background-color: white;
+}
+QTabWidget::tab-bar {
+    alignment: left;
+}
+QTabBar::tab {
+    background-color: #e0e0e0;
+    border: 1px solid #c0c0c0;
+    padding: 8px 16px;
+    margin: 2px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+QTabBar::tab:selected {
+    background-color: #4CAF50;
+    color: white;
+}
+QTabBar::tab:hover {
+    background-color: #d0d0d0;
+}
+QGroupBox {
+    font-weight: bold;
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    background-color: white;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 8px 0 8px;
+    color: #333333;
+}
+QPushButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #45a049;
+}
+QPushButton:pressed {
+    background-color: #3d8b40;
+}
+QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
+    border: 1px solid #cccccc;
+    padding: 4px;
+    border-radius: 4px;
+}
+QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 2px solid #4CAF50;
+}
+QProgressBar {
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    text-align: center;
+}
+QProgressBar::chunk {
+    background-color: #4CAF50;
+    border-radius: 3px;
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QLabel" name="titleLabel">
+     <property name="text">
+      <string>庐山实习地图制作工具</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2E7D32;
+    padding: 10px;
+    text-align: center;
+}</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="frameTab">
+      <attribute name="title">
+       <string>定义图廓层</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="frameTabLayout">
+       <item>
+        <widget class="QGroupBox" name="frameGroupBox">
+         <property name="title">
+          <string>图廓层创建设置</string>
+         </property>
+         <layout class="QFormLayout" name="frameFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="frameNameLabel">
+            <property name="text">
+             <string>图廓层名称:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="frameNameEdit">
+            <property name="text">
+             <string>map_frame</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="frameCrsLabel">
+            <property name="text">
+             <string>坐标系:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="frameCrsComboBox">
+            <item>
+             <property name="text">
+              <string>EPSG:32650 - WGS 84 / UTM zone 50N</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>EPSG:4326 - WGS 84</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>EPSG:3857 - WGS 84 / Pseudo-Mercator</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="frameMethodLabel">
+            <property name="text">
+             <string>创建方式:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="frameMethodComboBox">
+            <item>
+             <property name="text">
+              <string>交互式绘制</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>导入已有图层</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>从坐标创建</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="frameFileLabel">
+            <property name="text">
+             <string>导入文件:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <layout class="QHBoxLayout" name="frameFileLayout">
+            <item>
+             <widget class="QLineEdit" name="frameFileEdit">
+              <property name="placeholderText">
+               <string>选择图层文件（.shp, .geojson, .kml等）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="frameFileBrowseButton">
+              <property name="text">
+               <string>浏览...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="frameActionGroupBox">
+         <property name="title">
+          <string>操作</string>
+         </property>
+         <layout class="QHBoxLayout" name="frameActionLayout">
+          <item>
+           <widget class="QPushButton" name="createFrameButton">
+            <property name="text">
+             <string>创建图廓层</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="drawFrameButton">
+            <property name="text">
+             <string>交互式绘制</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="frameActionSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <spacer name="frameTabSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="demTab">
+      <attribute name="title">
+       <string>晕渲图底图与等高线</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="demTabLayout">
+       <item>
+        <widget class="QGroupBox" name="demInputGroupBox">
+         <property name="title">
+          <string>DEM数据输入</string>
+         </property>
+         <layout class="QFormLayout" name="demInputFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="demFileLabel">
+            <property name="text">
+             <string>DEM文件:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="demFileLayout">
+            <item>
+             <widget class="QLineEdit" name="demFileEdit">
+              <property name="placeholderText">
+               <string>选择DEM文件（.tif, .tiff等）</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="demFileBrowseButton">
+              <property name="text">
+               <string>浏览...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="outputDirLabel">
+            <property name="text">
+             <string>输出目录:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="outputDirLayout">
+            <item>
+             <widget class="QLineEdit" name="outputDirEdit">
+              <property name="placeholderText">
+               <string>选择输出目录</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="outputDirBrowseButton">
+              <property name="text">
+               <string>浏览...</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="demCrsLabel">
+            <property name="text">
+             <string>投影坐标系:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="demCrsComboBox">
+            <item>
+             <property name="text">
+              <string>EPSG:32650 - WGS 84 / UTM zone 50N</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>EPSG:4326 - WGS 84</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>EPSG:3857 - WGS 84 / Pseudo-Mercator</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="hillshadeGroupBox">
+         <property name="title">
+          <string>山体阴影设置</string>
+         </property>
+         <layout class="QFormLayout" name="hillshadeFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="zFactorLabel">
+            <property name="text">
+             <string>Z因子:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QDoubleSpinBox" name="zFactorSpinBox">
+            <property name="value">
+             <double>1.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.100000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="azimuthLabel">
+            <property name="text">
+             <string>方位角:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="azimuthSpinBox">
+            <property name="maximum">
+             <number>360</number>
+            </property>
+            <property name="value">
+             <number>315</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="altitudeLabel">
+            <property name="text">
+             <string>垂直角:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QSpinBox" name="altitudeSpinBox">
+            <property name="maximum">
+             <number>90</number>
+            </property>
+            <property name="value">
+             <number>35</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="contourGroupBox">
+         <property name="title">
+          <string>等高线设置</string>
+         </property>
+         <layout class="QFormLayout" name="contourFormLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="contour100Label">
+            <property name="text">
+             <string>100m等高线间隔:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QSpinBox" name="contour100SpinBox">
+            <property name="minimum">
+             <number>50</number>
+            </property>
+            <property name="maximum">
+             <number>500</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="contour20Label">
+            <property name="text">
+             <string>20m等高线间隔:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="contour20SpinBox">
+            <property name="minimum">
+             <number>5</number>
+            </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="addLabelsCheckBox">
+            <property name="text">
+             <string>添加等高线标注</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="demActionGroupBox">
+         <property name="title">
+          <string>操作</string>
+         </property>
+         <layout class="QHBoxLayout" name="demActionLayout">
+          <item>
+           <widget class="QPushButton" name="processButton">
+            <property name="text">
+             <string>开始处理</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="previewButton">
+            <property name="text">
+             <string>预览设置</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="demActionSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="futureTab">
+      <attribute name="title">
+       <string>其他功能</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="futureTabLayout">
+       <item>
+        <widget class="QLabel" name="futureLabel">
+         <property name="text">
+          <string>其他功能模块将在后续版本中添加...</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QLabel {
+    font-size: 16px;
+    color: #666666;
+    padding: 50px;
+}</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="futureTabSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="statusLabel">
+     <property name="text">
+      <string>就绪</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    padding: 5px;
+    color: #666666;
+}</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="button_box">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Close</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
@@ -37,11 +595,11 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>accept()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>248</x>
      <y>254</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>157</x>
      <y>274</y>
     </hint>
@@ -53,11 +611,11 @@
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>286</x>
      <y>274</y>
     </hint>

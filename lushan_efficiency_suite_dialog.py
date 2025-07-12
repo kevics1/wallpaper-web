@@ -32,13 +32,271 @@ Facility Accessibility Analyzer: Generates multi-criteria service coverage maps 
 """
 
 import os
+import tempfile
+from pathlib import Path
 
 from qgis.PyQt import uic
 from qgis.PyQt import QtWidgets
+from qgis.PyQt.QtCore import QThread, pyqtSignal, QTimer
+from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+
+from qgis.core import (QgsProject, QgsVectorLayer, QgsRasterLayer, QgsProcessing,
+                       QgsProcessingContext, QgsProcessingFeedback, QgsApplication,
+                       QgsCoordinateReferenceSystem, QgsWkbTypes, QgsSymbol,
+                       QgsRendererRange, QgsGraduatedSymbolRenderer, QgsRasterShader,
+                       QgsColorRampShader, QgsSingleBandPseudoColorRenderer,
+                       QgsHillshadeRenderer, QgsMapLayerStyle, QgsVectorFileWriter,
+                       QgsVectorDataProvider, QgsFeature, QgsGeometry, QgsPointXY,
+                       QgsRectangle, QgsField, QgsFields, QgsSymbolLayer,
+                       QgsFillSymbol, QgsLineSymbol, QgsMarkerSymbol, QgsSimpleLineSymbolLayer,
+                       QgsSimpleFillSymbolLayer, QgsPalLayerSettings, QgsTextFormat,
+                       QgsTextBufferSettings, QgsVectorLayerSimpleLabeling, QgsMapLayer)
+from qgis.analysis import QgsNativeAlgorithms
+
+import processing
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'lushan_efficiency_suite_dialog_base.ui'))
+
+
+class ProcessingWorker(QThread):
+    """Worker thread for processing operations"""
+    progress_changed = pyqtSignal(int)
+    status_changed = pyqtSignal(str)
+    error_occurred = pyqtSignal(str)
+    finished = pyqtSignal(bool)
+    
+    def __init__(self, operation, params):
+        super().__init__()
+        self.operation = operation
+        self.params = params
+        
+    def run(self):
+        try:
+            if self.operation == 'process_dem':
+                self.process_dem()
+            elif self.operation == 'create_frame':
+                self.create_frame()
+        except Exception as e:
+            self.error_occurred.emit(str(e))
+            self.finished.emit(False)
+            
+    def process_dem(self):
+        """Process DEM data to create hillshade and contours"""
+        dem_file = self.params['dem_file']
+        output_dir = self.params['output_dir']
+        z_factor = self.params['z_factor']
+        azimuth = self.params['azimuth']
+        altitude = self.params['altitude']
+        contour_100 = self.params['contour_100']
+        contour_20 = self.params['contour_20']
+        add_labels = self.params['add_labels']
+        crs = self.params['crs']
+        
+        self.progress_changed.emit(10)
+        self.status_changed.emit("加载DEM数据...")
+        
+        # Load DEM
+        dem_layer = QgsRasterLayer(dem_file, "DEM")
+        if not dem_layer.isValid():
+            raise Exception(f"无法加载DEM文件: {dem_file}")
+            
+        # Reproject if needed
+        if dem_layer.crs().authid() != crs:
+            self.status_changed.emit("重投影DEM数据...")
+            self.progress_changed.emit(20)
+            
+            reprojected_dem = os.path.join(output_dir, "dem_reprojected.tif")
+            processing.run("gdal:warpreproject", {
+                'INPUT': dem_file,
+                'SOURCE_CRS': dem_layer.crs(),
+                'TARGET_CRS': QgsCoordinateReferenceSystem(crs),
+                'RESAMPLING': 0,
+                'OUTPUT': reprojected_dem
+            })
+            dem_file = reprojected_dem
+            
+        self.progress_changed.emit(30)
+        self.status_changed.emit("创建山体阴影...")
+        
+        # Create hillshade
+        hillshade_file = os.path.join(output_dir, "shade.tif")
+        processing.run("gdal:hillshade", {
+            'INPUT': dem_file,
+            'BAND': 1,
+            'Z_FACTOR': z_factor,
+            'AZIMUTH': azimuth,
+            'ALTITUDE': altitude,
+            'OUTPUT': hillshade_file
+        })
+        
+        self.progress_changed.emit(50)
+        self.status_changed.emit("创建DEM渲染...")
+        
+        # Create styled DEM
+        styled_dem_file = os.path.join(output_dir, "dem.tif")
+        processing.run("gdal:translate", {
+            'INPUT': dem_file,
+            'OUTPUT': styled_dem_file
+        })
+        
+        self.progress_changed.emit(70)
+        self.status_changed.emit("生成等高线...")
+        
+        # Create contours
+        contour_100_file = os.path.join(output_dir, "contour_100m.shp")
+        processing.run("gdal:contour", {
+            'INPUT': dem_file,
+            'BAND': 1,
+            'INTERVAL': contour_100,
+            'OUTPUT': contour_100_file
+        })
+        
+        contour_20_file = os.path.join(output_dir, "contour_20m.shp")
+        processing.run("gdal:contour", {
+            'INPUT': dem_file,
+            'BAND': 1,
+            'INTERVAL': contour_20,
+            'OUTPUT': contour_20_file
+        })
+        
+        self.progress_changed.emit(90)
+        self.status_changed.emit("添加到地图...")
+        
+        # Add layers to map
+        self.add_layers_to_map({
+            'dem': styled_dem_file,
+            'hillshade': hillshade_file,
+            'contour_100': contour_100_file,
+            'contour_20': contour_20_file,
+            'add_labels': add_labels
+        })
+        
+        self.progress_changed.emit(100)
+        self.status_changed.emit("处理完成!")
+        self.finished.emit(True)
+        
+    def create_frame(self):
+        """Create frame layer"""
+        frame_name = self.params['frame_name']
+        crs = self.params['crs']
+        method = self.params['method']
+        file_path = self.params.get('file_path', '')
+        
+        self.progress_changed.emit(20)
+        self.status_changed.emit("创建图廓层...")
+        
+        if method == "导入已有图层" and file_path:
+            # Import existing layer
+            layer = QgsVectorLayer(file_path, frame_name)
+            if not layer.isValid():
+                raise Exception(f"无法加载图层文件: {file_path}")
+                
+            # Reproject if needed
+            if layer.crs().authid() != crs:
+                self.status_changed.emit("重投影图层...")
+                self.progress_changed.emit(50)
+                
+                # Create reprojected layer
+                layer_crs = QgsCoordinateReferenceSystem(crs)
+                # This would need proper reprojection logic
+                
+        else:
+            # Create new layer for interactive drawing
+            layer = QgsVectorLayer(f"Polygon?crs={crs}", frame_name, "memory")
+            if not layer.isValid():
+                raise Exception("无法创建图廓层")
+                
+        self.progress_changed.emit(80)
+        self.status_changed.emit("添加到地图...")
+        
+        # Add layer to map
+        QgsProject.instance().addMapLayer(layer)
+        
+        self.progress_changed.emit(100)
+        self.status_changed.emit("图廓层创建完成!")
+        self.finished.emit(True)
+        
+    def add_layers_to_map(self, layers):
+        """Add processed layers to map with proper styling"""
+        project = QgsProject.instance()
+        
+        # Add DEM layer with color ramp
+        if 'dem' in layers:
+            dem_layer = QgsRasterLayer(layers['dem'], "DEM渲染")
+            if dem_layer.isValid():
+                # Set color ramp styling
+                shader = QgsRasterShader()
+                color_ramp_shader = QgsColorRampShader()
+                color_ramp_shader.setColorRampType(QgsColorRampShader.Interpolated)
+                
+                # Define color stops based on requirements
+                color_list = [
+                    QgsColorRampShader.ColorRampItem(0, "#d8e5be", "0%"),
+                    QgsColorRampShader.ColorRampItem(29, "#add59c", "29%"),
+                    QgsColorRampShader.ColorRampItem(89, "#4caf50", "89%"),
+                    QgsColorRampShader.ColorRampItem(100, "#006603", "100%")
+                ]
+                color_ramp_shader.setColorRampItemList(color_list)
+                shader.setRasterShaderFunction(color_ramp_shader)
+                
+                renderer = QgsSingleBandPseudoColorRenderer(dem_layer.dataProvider(), 1, shader)
+                renderer.setOpacity(0.8)  # 80% opacity
+                dem_layer.setRenderer(renderer)
+                
+                project.addMapLayer(dem_layer)
+        
+        # Add hillshade layer
+        if 'hillshade' in layers:
+            hillshade_layer = QgsRasterLayer(layers['hillshade'], "山体阴影")
+            if hillshade_layer.isValid():
+                project.addMapLayer(hillshade_layer)
+                
+        # Add contour layers with styling
+        if 'contour_100' in layers:
+            contour_100_layer = QgsVectorLayer(layers['contour_100'], "100m等高线")
+            if contour_100_layer.isValid():
+                # Style 100m contours
+                symbol = QgsLineSymbol()
+                symbol.setColor("#fffac1")
+                symbol.setWidth(0.3)
+                symbol.setOpacity(0.6)
+                
+                renderer = contour_100_layer.renderer()
+                renderer.setSymbol(symbol)
+                
+                # Add labels if requested
+                if layers.get('add_labels', False):
+                    label_settings = QgsPalLayerSettings()
+                    label_settings.fieldName = "ELEV"
+                    label_settings.enabled = True
+                    
+                    text_format = QgsTextFormat()
+                    text_format.setFont("宋体")
+                    text_format.setSize(0.6)
+                    text_format.setColor("#000000")
+                    label_settings.setFormat(text_format)
+                    
+                    labeling = QgsVectorLayerSimpleLabeling(label_settings)
+                    contour_100_layer.setLabeling(labeling)
+                    contour_100_layer.setLabelsEnabled(True)
+                
+                project.addMapLayer(contour_100_layer)
+                
+        if 'contour_20' in layers:
+            contour_20_layer = QgsVectorLayer(layers['contour_20'], "20m等高线")
+            if contour_20_layer.isValid():
+                # Style 20m contours
+                symbol = QgsLineSymbol()
+                symbol.setColor("#fff5a5")
+                symbol.setWidth(0.1)
+                symbol.setOpacity(0.5)
+                
+                renderer = contour_20_layer.renderer()
+                renderer.setSymbol(symbol)
+                
+                project.addMapLayer(contour_20_layer)
 
 
 class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -51,3 +309,216 @@ class LushanEfficiencySuiteDialog(QtWidgets.QDialog, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+        
+        # Initialize variables
+        self.worker = None
+        
+        # Connect signals
+        self.connect_signals()
+        
+        # Initialize UI state
+        self.init_ui_state()
+        
+    def connect_signals(self):
+        """Connect UI signals to slots"""
+        # Frame tab signals
+        self.frameFileBrowseButton.clicked.connect(self.browse_frame_file)
+        self.createFrameButton.clicked.connect(self.create_frame_layer)
+        self.drawFrameButton.clicked.connect(self.draw_frame_layer)
+        self.frameMethodComboBox.currentTextChanged.connect(self.on_frame_method_changed)
+        
+        # DEM tab signals
+        self.demFileBrowseButton.clicked.connect(self.browse_dem_file)
+        self.outputDirBrowseButton.clicked.connect(self.browse_output_dir)
+        self.processButton.clicked.connect(self.process_dem)
+        self.previewButton.clicked.connect(self.preview_settings)
+        
+    def init_ui_state(self):
+        """Initialize UI state"""
+        # Hide frame file controls initially
+        self.frameFileLabel.setVisible(False)
+        self.frameFileEdit.setVisible(False)
+        self.frameFileBrowseButton.setVisible(False)
+        
+        # Set default output directory
+        self.outputDirEdit.setText(os.path.expanduser("~/Desktop"))
+        
+    def on_frame_method_changed(self, method):
+        """Handle frame method change"""
+        show_file_controls = method == "导入已有图层"
+        self.frameFileLabel.setVisible(show_file_controls)
+        self.frameFileEdit.setVisible(show_file_controls)
+        self.frameFileBrowseButton.setVisible(show_file_controls)
+        
+    def browse_frame_file(self):
+        """Browse for frame file"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "选择图层文件", "", 
+            "图层文件 (*.shp *.geojson *.kml *.gpx);;所有文件 (*)"
+        )
+        if file_path:
+            self.frameFileEdit.setText(file_path)
+            
+    def browse_dem_file(self):
+        """Browse for DEM file"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "选择DEM文件", "", 
+            "栅格文件 (*.tif *.tiff *.img *.asc);;所有文件 (*)"
+        )
+        if file_path:
+            self.demFileEdit.setText(file_path)
+            
+    def browse_output_dir(self):
+        """Browse for output directory"""
+        dir_path = QFileDialog.getExistingDirectory(
+            self, "选择输出目录", self.outputDirEdit.text()
+        )
+        if dir_path:
+            self.outputDirEdit.setText(dir_path)
+            
+    def create_frame_layer(self):
+        """Create frame layer"""
+        frame_name = self.frameNameEdit.text()
+        if not frame_name:
+            QMessageBox.warning(self, "警告", "请输入图廓层名称")
+            return
+            
+        crs = self.frameCrsComboBox.currentText().split(' - ')[0]
+        method = self.frameMethodComboBox.currentText()
+        file_path = self.frameFileEdit.text()
+        
+        if method == "导入已有图层" and not file_path:
+            QMessageBox.warning(self, "警告", "请选择要导入的图层文件")
+            return
+            
+        # Start processing
+        self.start_processing('create_frame', {
+            'frame_name': frame_name,
+            'crs': crs,
+            'method': method,
+            'file_path': file_path
+        })
+        
+    def draw_frame_layer(self):
+        """Start interactive drawing"""
+        QMessageBox.information(self, "提示", "请使用QGIS的编辑工具在地图上绘制图廓范围")
+        
+    def process_dem(self):
+        """Process DEM data"""
+        dem_file = self.demFileEdit.text()
+        output_dir = self.outputDirEdit.text()
+        
+        if not dem_file:
+            QMessageBox.warning(self, "警告", "请选择DEM文件")
+            return
+            
+        if not output_dir:
+            QMessageBox.warning(self, "警告", "请选择输出目录")
+            return
+            
+        if not os.path.exists(dem_file):
+            QMessageBox.warning(self, "警告", "DEM文件不存在")
+            return
+            
+        if not os.path.exists(output_dir):
+            try:
+                os.makedirs(output_dir)
+            except:
+                QMessageBox.warning(self, "警告", "无法创建输出目录")
+                return
+                
+        # Get parameters
+        crs = self.demCrsComboBox.currentText().split(' - ')[0]
+        z_factor = self.zFactorSpinBox.value()
+        azimuth = self.azimuthSpinBox.value()
+        altitude = self.altitudeSpinBox.value()
+        contour_100 = self.contour100SpinBox.value()
+        contour_20 = self.contour20SpinBox.value()
+        add_labels = self.addLabelsCheckBox.isChecked()
+        
+        # Start processing
+        self.start_processing('process_dem', {
+            'dem_file': dem_file,
+            'output_dir': output_dir,
+            'crs': crs,
+            'z_factor': z_factor,
+            'azimuth': azimuth,
+            'altitude': altitude,
+            'contour_100': contour_100,
+            'contour_20': contour_20,
+            'add_labels': add_labels
+        })
+        
+    def preview_settings(self):
+        """Preview current settings"""
+        settings = []
+        settings.append(f"DEM文件: {self.demFileEdit.text()}")
+        settings.append(f"输出目录: {self.outputDirEdit.text()}")
+        settings.append(f"坐标系: {self.demCrsComboBox.currentText()}")
+        settings.append(f"Z因子: {self.zFactorSpinBox.value()}")
+        settings.append(f"方位角: {self.azimuthSpinBox.value()}°")
+        settings.append(f"垂直角: {self.altitudeSpinBox.value()}°")
+        settings.append(f"100m等高线间隔: {self.contour100SpinBox.value()}m")
+        settings.append(f"20m等高线间隔: {self.contour20SpinBox.value()}m")
+        settings.append(f"添加标注: {'是' if self.addLabelsCheckBox.isChecked() else '否'}")
+        
+        QMessageBox.information(self, "设置预览", "\n".join(settings))
+        
+    def start_processing(self, operation, params):
+        """Start processing in worker thread"""
+        if self.worker and self.worker.isRunning():
+            QMessageBox.warning(self, "警告", "处理正在进行中，请稍候...")
+            return
+            
+        self.worker = ProcessingWorker(operation, params)
+        self.worker.progress_changed.connect(self.progressBar.setValue)
+        self.worker.status_changed.connect(self.statusLabel.setText)
+        self.worker.error_occurred.connect(self.on_processing_error)
+        self.worker.finished.connect(self.on_processing_finished)
+        
+        # Show progress bar
+        self.progressBar.setVisible(True)
+        self.progressBar.setValue(0)
+        self.statusLabel.setText("开始处理...")
+        
+        # Disable buttons
+        self.processButton.setEnabled(False)
+        self.createFrameButton.setEnabled(False)
+        
+        self.worker.start()
+        
+    def on_processing_error(self, error_message):
+        """Handle processing error"""
+        QMessageBox.critical(self, "错误", f"处理过程中发生错误:\n{error_message}")
+        self.statusLabel.setText("错误: " + error_message)
+        
+    def on_processing_finished(self, success):
+        """Handle processing finished"""
+        # Hide progress bar
+        self.progressBar.setVisible(False)
+        
+        # Enable buttons
+        self.processButton.setEnabled(True)
+        self.createFrameButton.setEnabled(True)
+        
+        if success:
+            QMessageBox.information(self, "成功", "处理完成!")
+            self.statusLabel.setText("处理完成")
+        else:
+            self.statusLabel.setText("处理失败")
+            
+    def closeEvent(self, event):
+        """Handle close event"""
+        if self.worker and self.worker.isRunning():
+            reply = QMessageBox.question(
+                self, "确认", "处理正在进行中，确定要关闭吗？",
+                QMessageBox.Yes | QMessageBox.No
+            )
+            if reply == QMessageBox.Yes:
+                self.worker.terminate()
+                self.worker.wait()
+                event.accept()
+            else:
+                event.ignore()
+        else:
+            event.accept()
