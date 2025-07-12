@@ -172,7 +172,7 @@ class LushanEfficiencySuite:
         icon_path = ':/plugins/lushan_efficiency_suite/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'庐山实习绘图&分析插件'),
+            text=self.tr(u'庐山实习地图制作工具'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
