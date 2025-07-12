@@ -196,7 +196,7 @@ class LushanEfficiencySuite:
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.first_start == True:
             self.first_start = False
-            self.dlg = LushanEfficiencySuiteDialog()
+            self.dlg = LushanEfficiencySuiteDialog(iface=self.iface)
 
         # show the dialog
         self.dlg.show()
@@ -204,6 +204,5 @@ class LushanEfficiencySuite:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
+            # The dialog handles all processing internally
             pass
