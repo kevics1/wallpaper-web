@@ -1,65 +1,917 @@
-<ui version="4.0" >
+<ui version="4.0">
  <class>LushanEfficiencySuiteDialogBase</class>
- <widget class="QDialog" name="LushanEfficiencySuiteDialogBase" >
-  <property name="geometry" >
+ <widget class="QDialog" name="LushanEfficiencySuiteDialogBase">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>700</width>
+    <height>850</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>Lushan Efficiency Suite</string>
+  <property name="windowTitle">
+   <string>庐山实习地图制作工具 - Lushan Map Making Tool</string>
   </property>
-  <widget class="QDialogButtonBox" name="button_box" >
-   <property name="geometry" >
-    <rect>
-     <x>30</x>
-     <y>240</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation" >
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons" >
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>678</width>
+        <height>1200</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="mainLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox_mapExtent">
+         <property name="title">
+          <string>1. 定义图廓层 (Define Map Extent Layer)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="extentLayout">
+          <item>
+           <widget class="QLabel" name="label_extentInfo">
+            <property name="text">
+             <string>创建制图范围区域面数据，将区域面作为图廓层使用 (EPSG:32650投影)</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="styleSheet">
+             <string>color: #666; margin: 5px;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="extentButtonLayout">
+            <item>
+             <widget class="QPushButton" name="btn_createExtent">
+              <property name="text">
+               <string>创建图廓区域 (Create Map Extent)</string>
+              </property>
+              <property name="styleSheet">
+               <string>QPushButton { background-color: #2196F3; color: white; border: none; padding: 8px 16px; border-radius: 4px; }
+QPushButton:hover { background-color: #1976D2; }
+QPushButton:pressed { background-color: #0D47A1; }</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_selectExtentLayer">
+              <property name="text">
+               <string>选择现有图层 (Select Existing Layer)</string>
+              </property>
+              <property name="styleSheet">
+               <string>QPushButton { background-color: #4CAF50; color: white; border: none; padding: 8px 16px; border-radius: 4px; }
+QPushButton:hover { background-color: #388E3C; }
+QPushButton:pressed { background-color: #1B5E20; }</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="extentSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_selectedExtent">
+            <property name="text">
+             <string>当前图廓层: 未选择 (Current extent layer: None selected)</string>
+            </property>
+            <property name="styleSheet">
+             <string>background-color: #F5F5F5; padding: 8px; border-radius: 4px; margin: 5px;</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_demProcessing">
+         <property name="title">
+          <string>2. DEM数据处理 (DEM Data Processing)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="demLayout">
+          <item>
+           <widget class="QLabel" name="label_demInfo">
+            <property name="text">
+             <string>输入DEM数据，将自动裁剪（基于图廓层）并转换投影（默认EPSG:32650）</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+            <property name="styleSheet">
+             <string>color: #666; margin: 5px;</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="demFileLayout">
+            <item>
+             <widget class="QLabel" name="label_demFile">
+              <property name="text">
+               <string>DEM文件:</string>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_demFile">
+              <property name="placeholderText">
+               <string>选择DEM数据文件 (Select DEM data file)</string>
+              </property>
+              <property name="styleSheet">
+               <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_browseDem">
+              <property name="text">
+               <string>浏览...</string>
+              </property>
+              <property name="styleSheet">
+               <string>QPushButton { background-color: #FF9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; }
+QPushButton:hover { background-color: #F57C00; }
+QPushButton:pressed { background-color: #E65100; }</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="projectionLayout">
+            <item>
+             <widget class="QLabel" name="label_projection">
+              <property name="text">
+               <string>目标投影:</string>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_projection">
+              <property name="text">
+               <string>EPSG:32650</string>
+              </property>
+              <property name="styleSheet">
+               <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_selectProjection">
+              <property name="text">
+               <string>选择投影</string>
+              </property>
+              <property name="styleSheet">
+               <string>QPushButton { background-color: #9C27B0; color: white; border: none; padding: 6px 12px; border-radius: 4px; }
+QPushButton:hover { background-color: #7B1FA2; }
+QPushButton:pressed { background-color: #4A148C; }</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_rendering">
+         <property name="title">
+          <string>3. 渲染输出参数 (Rendering Output Parameters)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="renderingLayout">
+          <item>
+           <widget class="QTabWidget" name="tabWidget_rendering">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab_demRendering">
+             <attribute name="title">
+              <string>DEM渲染</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="demRenderLayout">
+              <item>
+               <layout class="QFormLayout" name="demFormLayout">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_demOpacity">
+                  <property name="text">
+                   <string>不透明度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QHBoxLayout" name="opacityLayout">
+                  <item>
+                   <widget class="QSlider" name="slider_demOpacity">
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>100</number>
+                    </property>
+                    <property name="value">
+                     <number>80</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_opacityValue">
+                    <property name="text">
+                     <string>80%</string>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>40</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_colorGradient">
+                  <property name="text">
+                   <string>颜色梯度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QLabel" name="label_gradientInfo">
+                  <property name="text">
+                   <string>0%:#d8e5be, 29%:#add59c, 89%:#4caf50, 100%:#006603</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string>background: linear-gradient(to right, #d8e5be, #add59c, #4caf50, #006603); padding: 8px; border-radius: 4px; color: white;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_demOutput">
+                  <property name="text">
+                   <string>输出文件名:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLineEdit" name="lineEdit_demOutput">
+                  <property name="text">
+                   <string>dem.tif</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_hillshade">
+             <attribute name="title">
+              <string>山体阴影</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="hillshadeLayout">
+              <item>
+               <layout class="QFormLayout" name="hillshadeFormLayout">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_zFactor">
+                  <property name="text">
+                   <string>Z因子:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_zFactor">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_azimuth">
+                  <property name="text">
+                   <string>方位角 (°):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QSpinBox" name="spinBox_azimuth">
+                  <property name="minimum">
+                   <number>0</number>
+                  </property>
+                  <property name="maximum">
+                   <number>360</number>
+                  </property>
+                  <property name="value">
+                   <number>315</number>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_elevation">
+                  <property name="text">
+                   <string>垂直角 (°):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QSpinBox" name="spinBox_elevation">
+                  <property name="minimum">
+                   <number>0</number>
+                  </property>
+                  <property name="maximum">
+                   <number>90</number>
+                  </property>
+                  <property name="value">
+                   <number>35</number>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_shadeOutput">
+                  <property name="text">
+                   <string>输出文件名:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLineEdit" name="lineEdit_shadeOutput">
+                  <property name="text">
+                   <string>shade.tif</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_contours">
+         <property name="title">
+          <string>4. 等值线生成 (Contour Generation)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="contoursLayout">
+          <item>
+           <widget class="QTabWidget" name="tabWidget_contours">
+            <property name="currentIndex">
+             <number>0</number>
+            </property>
+            <widget class="QWidget" name="tab_contour100">
+             <attribute name="title">
+              <string>100m等值线</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="contour100Layout">
+              <item>
+               <layout class="QFormLayout" name="contour100FormLayout">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_contour100Color">
+                  <property name="text">
+                   <string>颜色:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QHBoxLayout" name="color100Layout">
+                  <item>
+                   <widget class="QPushButton" name="btn_contour100Color">
+                    <property name="text">
+                     <string>#fffac1</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string>background-color: #fffac1; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="color100Spacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_contour100Width">
+                  <property name="text">
+                   <string>宽度 (mm):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_contour100Width">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.300000000000000</double>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_contour100Opacity">
+                  <property name="text">
+                   <string>不透明度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <layout class="QHBoxLayout" name="opacity100Layout">
+                  <item>
+                   <widget class="QSlider" name="slider_contour100Opacity">
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>100</number>
+                    </property>
+                    <property name="value">
+                     <number>60</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_opacity100Value">
+                    <property name="text">
+                     <string>60%</string>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>40</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QCheckBox" name="checkBox_contour100Labels">
+                  <property name="text">
+                   <string>显示注记</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLabel" name="label_contour100LabelInfo">
+                  <property name="text">
+                   <string>宋体, 0.6点, 黑色, 平行模式, 线中间</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string>color: #666; font-size: 11px;</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tab_contour20">
+             <attribute name="title">
+              <string>20m等值线</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="contour20Layout">
+              <item>
+               <layout class="QFormLayout" name="contour20FormLayout">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_contour20Color">
+                  <property name="text">
+                   <string>颜色:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <layout class="QHBoxLayout" name="color20Layout">
+                  <item>
+                   <widget class="QPushButton" name="btn_contour20Color">
+                    <property name="text">
+                     <string>#fff5a5</string>
+                    </property>
+                    <property name="styleSheet">
+                     <string>background-color: #fff5a5; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px;</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="color20Spacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_contour20Width">
+                  <property name="text">
+                   <string>宽度 (mm):</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <widget class="QDoubleSpinBox" name="doubleSpinBox_contour20Width">
+                  <property name="decimals">
+                   <number>1</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>10.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="styleSheet">
+                   <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_contour20Opacity">
+                  <property name="text">
+                   <string>不透明度:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <layout class="QHBoxLayout" name="opacity20Layout">
+                  <item>
+                   <widget class="QSlider" name="slider_contour20Opacity">
+                    <property name="minimum">
+                     <number>0</number>
+                    </property>
+                    <property name="maximum">
+                     <number>100</number>
+                    </property>
+                    <property name="value">
+                     <number>50</number>
+                    </property>
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_opacity20Value">
+                    <property name="text">
+                     <string>50%</string>
+                    </property>
+                    <property name="minimumSize">
+                     <size>
+                      <width>40</width>
+                      <height>0</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QCheckBox" name="checkBox_contour20Labels">
+                  <property name="text">
+                   <string>显示注记</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLabel" name="label_contour20LabelInfo">
+                  <property name="text">
+                   <string>无标注</string>
+                  </property>
+                  <property name="styleSheet">
+                   <string>color: #666; font-size: 11px;</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_output">
+         <property name="title">
+          <string>5. 输出设置 (Output Settings)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="outputLayout">
+          <item>
+           <layout class="QHBoxLayout" name="outputDirLayout">
+            <item>
+             <widget class="QLabel" name="label_outputDir">
+              <property name="text">
+               <string>输出目录:</string>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>80</width>
+                <height>0</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_outputDir">
+              <property name="placeholderText">
+               <string>选择输出目录 (Select output directory)</string>
+              </property>
+              <property name="styleSheet">
+               <string>padding: 6px; border: 1px solid #ddd; border-radius: 4px;</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_browseOutputDir">
+              <property name="text">
+               <string>浏览...</string>
+              </property>
+              <property name="styleSheet">
+               <string>QPushButton { background-color: #FF9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; }
+QPushButton:hover { background-color: #F57C00; }
+QPushButton:pressed { background-color: #E65100; }</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_progress">
+         <property name="title">
+          <string>处理进度 (Processing Progress)</string>
+         </property>
+         <property name="styleSheet">
+          <string>QGroupBox { font-weight: bold; margin-top: 10px; }
+QGroupBox::title { subcontrol-origin: margin; left: 10px; padding: 0 10px 0 10px; }</string>
+         </property>
+         <layout class="QVBoxLayout" name="progressLayout">
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>0</number>
+            </property>
+            <property name="styleSheet">
+             <string>QProgressBar { border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+QProgressBar::chunk { background-color: #4CAF50; }</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTextEdit" name="textEdit_log">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>120</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string>background-color: #f8f8f8; border: 1px solid #ddd; border-radius: 4px; padding: 8px; font-family: monospace;</string>
+            </property>
+            <property name="placeholderText">
+             <string>处理日志将在此显示... (Processing logs will appear here...)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <item>
+      <widget class="QPushButton" name="btn_process">
+       <property name="text">
+        <string>开始处理 (Start Processing)</string>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; }
+QPushButton:hover { background-color: #388E3C; }
+QPushButton:pressed { background-color: #1B5E20; }
+QPushButton:disabled { background-color: #ccc; }</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="buttonSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="button_box">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Close</set>
+       </property>
+       <property name="styleSheet">
+        <string>QPushButton { padding: 8px 16px; border-radius: 4px; }</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
-  <connection>
-   <sender>button_box</sender>
-   <signal>accepted()</signal>
-   <receiver>LushanEfficiencySuiteDialogBase</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="source_label" >
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destination_label" >
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>button_box</sender>
    <signal>rejected()</signal>
    <receiver>LushanEfficiencySuiteDialogBase</receiver>
    <slot>reject()</slot>
    <hints>
-    <hint type="source_label" >
+    <hint type="source_label">
      <x>316</x>
      <y>260</y>
     </hint>
-    <hint type="destination_label" >
+    <hint type="destination_label">
      <x>286</x>
      <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_demOpacity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_opacityValue</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="source_label">
+     <x>400</x>
+     <y>400</y>
+    </hint>
+    <hint type="destination_label">
+     <x>500</x>
+     <y>400</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_contour100Opacity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_opacity100Value</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="source_label">
+     <x>400</x>
+     <y>600</y>
+    </hint>
+    <hint type="destination_label">
+     <x>500</x>
+     <y>600</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>slider_contour20Opacity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>label_opacity20Value</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="source_label">
+     <x>400</x>
+     <y>700</y>
+    </hint>
+    <hint type="destination_label">
+     <x>500</x>
+     <y>700</y>
     </hint>
    </hints>
   </connection>
